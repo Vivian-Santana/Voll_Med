@@ -60,12 +60,14 @@ public class TratadorDeErros {
 	}
 
 	// FALLBACK PARA QUALQUER EXCEÇÃO NÃO TRATADA
+	/*
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity tratarErro500(Exception ex) {
 		ex.printStackTrace(); // OPCIONAL: ÚTIL PARA DEPURAÇÃO
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ErroDTO("Erro interno no servidor. Tente novamente mais tarde."));
 	}
+	*/
 
 	// CLASSE PARA PADRONIZAR RESPOSTA
 	public record ErroDTO(String erro) {
