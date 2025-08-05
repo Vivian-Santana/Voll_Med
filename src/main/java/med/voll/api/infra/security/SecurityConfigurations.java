@@ -3,8 +3,10 @@ package med.voll.api.infra.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -15,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)//ATIVA A SEGURANÇA A NÍVEL DE MÉTODO. PERMITE USAR ANOTAÇÕES COMO @PreAuthorize, @PostAuthorize, @Secured e OUTRAS NAS CLASSES DE SERVICE OU CONTROLLERS.
 public class SecurityConfigurations {
 
     @Autowired
@@ -25,9 +28,32 @@ public class SecurityConfigurations {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
-                    req.requestMatchers("/login").permitAll();
-                    req.requestMatchers("/v3/api-docs/**","/swagger-ui.html","/swagger-ui/**").permitAll();
-                    req.anyRequest().authenticated();
+                	
+                	
+                	// LIBERA LOGIN E SWAGGER
+                    req.requestMatchers("/login").permitAll();             
+                    req.requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll();        
+
+                    // LIBERA CADASTRO PARA MÉDICOS E PACIENTES
+                    req.requestMatchers(HttpMethod.POST, "/medicos").permitAll();
+                    req.requestMatchers(HttpMethod.PUT, "/medicos").permitAll();
+                    req.requestMatchers(HttpMethod.POST, "/pacientes").permitAll();
+                    req.requestMatchers(HttpMethod.PUT, "/pacientes").permitAll();
+
+                    // RESTRINGE LEITURA DE DADOS AOS SEUS RESPECTIVOS PAPÉIS
+                    req.requestMatchers(HttpMethod.GET, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
+                    req.requestMatchers(HttpMethod.DELETE, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
+                    req.requestMatchers(HttpMethod.GET, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
+                    req.requestMatchers(HttpMethod.DELETE, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
+                    
+
+
+
+                    // O ADMIN PODE ACESSAR TUDO
+                    req.requestMatchers("/admin/**").hasRole("ADMIN");
+
+                    // QUALQUER OUTRA REQUISIÇÃO PRECISA DE AUTENTICAÇÃO
+                    req.anyRequest().authenticated();                
 
                 })
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

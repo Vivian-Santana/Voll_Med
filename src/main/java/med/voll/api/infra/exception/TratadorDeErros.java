@@ -1,7 +1,10 @@
 package med.voll.api.infra.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import med.voll.api.domain.ValidacaoException;
+
+import java.nio.file.AccessDeniedException;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,6 +69,23 @@ public class TratadorDeErros {
 		ex.printStackTrace(); // OPCIONAL: ÚTIL PARA DEPURAÇÃO
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ErroDTO("Erro interno no servidor. Tente novamente mais tarde."));
+	}
+	*/
+	
+	/*
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<?> tratarErroAcessoNegado(HttpServletRequest request, AccessDeniedException ex) {
+	    String path = request.getRequestURI();
+
+	    if (path.startsWith("/medicos")) {
+	        return ResponseEntity
+	            .status(HttpStatus.FORBIDDEN)
+	            .body("Você não tem permissão para excluir esse médico. Só é possível excluir sua própria conta.");
+	    }
+
+	    return ResponseEntity
+	        .status(HttpStatus.FORBIDDEN)
+	        .body("Acesso negado.");
 	}
 	*/
 

@@ -25,10 +25,24 @@ public class Usuario implements UserDetails {
     private Long id;
     private String login;
     private String senha;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private Role role;
 
+    public enum Role {
+        //ROLE_USER,
+        ROLE_ADMIN,
+        ROLE_MEDICO,
+        ROLE_PACIENTE
+    }
+    
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    	if (this.role == null) {
+            throw new IllegalStateException("Usuário sem role definida!");
+        }
+        return List.of(new SimpleGrantedAuthority(("ROLE_ADMIN")));
     }
 
     @Override

@@ -37,8 +37,8 @@ class MedicoRepositoryTest {
         var proximaSegundaAs10 = LocalDate.now()
                 .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
                 .atTime(10, 0);
-        var medico = cadastrarMedico("Medico", "medico@voll.med", "123456", Especialidade.CARDIOLOGIA);
-        var paciente = cadastrarPaciente("Paciente", "paciente@email.com", "00000000000");
+        var medico = cadastrarMedico("Medico", "medico@voll.med","", "123456", Especialidade.CARDIOLOGIA);
+        var paciente = cadastrarPaciente("Paciente", "paciente@email.com","", "00000000000");
         cadastrarConsulta(medico, paciente, proximaSegundaAs10);
 
         //when ou act
@@ -55,7 +55,7 @@ class MedicoRepositoryTest {
         var proximaSegundaAs10 = LocalDate.now()
                 .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
                 .atTime(10, 0);
-        var medico = cadastrarMedico("Medico", "medico@voll.med", "123456", Especialidade.CARDIOLOGIA);
+        var medico = cadastrarMedico("Medico","medico@voll.med", "", "123456", Especialidade.CARDIOLOGIA);
 
         //when ou act
         var medicoLivre = medicoRepository.escolherMedicoAleatorioLivreNaData(Especialidade.CARDIOLOGIA, proximaSegundaAs10);
@@ -70,22 +70,23 @@ class MedicoRepositoryTest {
         em.persist(new Consulta(null, medico, paciente, data, null));
     }
 
-    private Medico cadastrarMedico(String nome, String email, String crm, Especialidade especialidade) {
-        var medico = new Medico(dadosMedico(nome, email, crm, especialidade));
+    private Medico cadastrarMedico(String nome, String email, String senha, String crm, Especialidade especialidade) {
+        var medico = new Medico(dadosMedico(nome, email, senha, crm, especialidade));
         em.persist(medico);
         return medico;
     }
 
-    private Paciente cadastrarPaciente(String nome, String email, String cpf) {
-        var paciente = new Paciente(dadosPaciente(nome, email, cpf));
+    private Paciente cadastrarPaciente(String nome, String email, String senha, String cpf) {
+        var paciente = new Paciente(dadosPaciente(nome, email, senha, cpf));
         em.persist(paciente);
         return paciente;
     }
 
-    private DadosCadastroMedico dadosMedico(String nome, String email, String crm, Especialidade especialidade) {
+    private DadosCadastroMedico dadosMedico(String nome, String email, String senha, String crm, Especialidade especialidade) {
         return new DadosCadastroMedico(
                 nome,
                 email,
+                "", //SENHA
                 "61999999999",
                 crm,
                 especialidade,
@@ -93,10 +94,11 @@ class MedicoRepositoryTest {
         );
     }
 
-    private DadosCadastroPaciente dadosPaciente(String nome, String email, String cpf) {
+    private DadosCadastroPaciente dadosPaciente(String nome, String email, String senha, String cpf) {
         return new DadosCadastroPaciente(
                 nome,
                 email,
+                "", //SENHA
                 "61999999999",
                 cpf,
                 dadosEndereco()

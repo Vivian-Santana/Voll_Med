@@ -3,12 +3,16 @@ package med.voll.api.controller;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import med.voll.api.domain.paciente.*;
+import med.voll.api.domain.usuario.Usuario;
+import med.voll.api.domain.usuario.UsuarioRepository;
+import med.voll.api.domain.usuario.Usuario.Role;
 import med.voll.api.domain.paciente.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -20,12 +24,27 @@ public class PacienteController {
 
     @Autowired
     private PacienteRepository repository;
+    
+    @Autowired
+	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 
     @PostMapping
     @Transactional
     public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroPaciente dados, UriComponentsBuilder uriBuilder) {
         var paciente = new Paciente(dados);
         repository.save(paciente);
+        
+        var usuario = new Usuario(
+                null,
+                dados.email(),
+                passwordEncoder.encode(dados.senha()),
+                Role.ROLE_PACIENTE
+            );
+            usuarioRepository.save(usuario);
+            
         var uri = uriBuilder.path("/pacientes/{id}").buildAndExpand(paciente.getId()).toUri();
         return ResponseEntity.created(uri).body(new DadosDetalhamentoPaciente(paciente));
     }
@@ -44,12 +63,12 @@ public class PacienteController {
         return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}")//SOFT DELETE
     @Transactional
     public ResponseEntity remover(@PathVariable Long id) {
         var paciente = repository.getReferenceById(id);
         paciente.inativar();
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok("Paciente desativado com sucesso!");
     }
 
     @GetMapping("/{id}")

@@ -58,6 +58,7 @@ class MedicoControllerTest {
         var dadosCadastro = new DadosCadastroMedico(
                 "Medico",
                 "medico@voll.med",
+                "", //SENHA
                 "61934346767",
                 "123456",
                 Especialidade.CARDIOLOGIA,
