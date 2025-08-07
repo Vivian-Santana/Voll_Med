@@ -14,18 +14,23 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import med.voll.api.infra.exception.AccessDeniedHandlerPersonalizado;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)//ATIVA A SEGURANÇA A NÍVEL DE MÉTODO. PERMITE USAR ANOTAÇÕES COMO @PreAuthorize, @PostAuthorize, @Secured e OUTRAS NAS CLASSES DE SERVICE OU CONTROLLERS.
 public class SecurityConfigurations {
-
-    @Autowired
-    private SecurityFilter securityFilter;
+	
+	@Autowired
+	private AccessDeniedHandlerPersonalizado accessDeniedHandlerPersonalizado;
+	 
+	@Autowired
+	    private SecurityFilter securityFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http.csrf(csrf -> csrf.disable())
+        return http
+        		.csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
                 	
@@ -45,9 +50,6 @@ public class SecurityConfigurations {
                     req.requestMatchers(HttpMethod.DELETE, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
                     req.requestMatchers(HttpMethod.GET, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
                     req.requestMatchers(HttpMethod.DELETE, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
-                    
-
-
 
                     // O ADMIN PODE ACESSAR TUDO
                     req.requestMatchers("/admin/**").hasRole("ADMIN");
@@ -56,6 +58,8 @@ public class SecurityConfigurations {
                     req.anyRequest().authenticated();                
 
                 })
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(accessDeniedHandlerPersonalizado))
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

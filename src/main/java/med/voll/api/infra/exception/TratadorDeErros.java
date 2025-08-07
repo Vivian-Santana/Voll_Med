@@ -1,13 +1,19 @@
 package med.voll.api.infra.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import med.voll.api.domain.ValidacaoException;
-
-import java.nio.file.AccessDeniedException;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,7 +23,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 @RestControllerAdvice
 public class TratadorDeErros {
-
+	
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity tratarErro404() {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recurso não encontrado");
@@ -39,7 +45,7 @@ public class TratadorDeErros {
 			this(erro.getField(), erro.getDefaultMessage());
 		}
 	}
-
+	
 	@ExceptionHandler(InvalidFormatException.class)
 	public ResponseEntity<?> tratarEnumInvalido(InvalidFormatException ex) {
 		var targetType = ex.getTargetType();
@@ -62,6 +68,7 @@ public class TratadorDeErros {
 		return ResponseEntity.badRequest().body(new ErroDTO("Formato de valor inválido."));
 	}
 
+	
 	// FALLBACK PARA QUALQUER EXCEÇÃO NÃO TRATADA
 	/*
 	@ExceptionHandler(Exception.class)
@@ -69,23 +76,6 @@ public class TratadorDeErros {
 		ex.printStackTrace(); // OPCIONAL: ÚTIL PARA DEPURAÇÃO
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 				.body(new ErroDTO("Erro interno no servidor. Tente novamente mais tarde."));
-	}
-	*/
-	
-	/*
-	@ExceptionHandler(AccessDeniedException.class)
-	public ResponseEntity<?> tratarErroAcessoNegado(HttpServletRequest request, AccessDeniedException ex) {
-	    String path = request.getRequestURI();
-
-	    if (path.startsWith("/medicos")) {
-	        return ResponseEntity
-	            .status(HttpStatus.FORBIDDEN)
-	            .body("Você não tem permissão para excluir esse médico. Só é possível excluir sua própria conta.");
-	    }
-
-	    return ResponseEntity
-	        .status(HttpStatus.FORBIDDEN)
-	        .body("Acesso negado.");
 	}
 	*/
 
