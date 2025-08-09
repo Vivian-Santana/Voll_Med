@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import med.voll.api.domain.ValidacaoException;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
@@ -34,6 +36,15 @@ public class TratadorDeErros {
 		var erros = ex.getFieldErrors();
 		return ResponseEntity.badRequest().body(erros.stream().map(DadosErroValidacao::new).toList());
 	}
+	
+	@ExceptionHandler(AccessDeniedException.class)
+	@ResponseStatus(HttpStatus.FORBIDDEN)
+	public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
+	    return ResponseEntity
+	        .status(HttpStatus.FORBIDDEN)
+	        .body(Map.of("Você não tem permissão para realizar esta ação", ex.getMessage()));
+	}
+
 
 	@ExceptionHandler(ValidacaoException.class)
 	public ResponseEntity tratarErroRegraDeNegocio(ValidacaoException ex) {

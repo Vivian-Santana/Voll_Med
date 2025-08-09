@@ -9,6 +9,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+//O SPRING SECURITY SÓ CHAMA O ACCESSDENIEDHANDLER QUANDO O USUÁRIO ESTÁ AUTENTICADO, MAS NÃO TEM A ROLE NECESSÁRIA PARA ACESSAR O RECURSO.
+
 @Component
 public class AccessDeniedHandlerPersonalizado implements AccessDeniedHandler{
 	
