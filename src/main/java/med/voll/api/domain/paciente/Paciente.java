@@ -2,11 +2,14 @@ package med.voll.api.domain.paciente;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import med.voll.api.domain.endereco.Endereco;
+import med.voll.api.domain.usuario.Usuario;
 
+@Data
 @Getter
 @EqualsAndHashCode(of = "id")
 @NoArgsConstructor
@@ -15,9 +18,9 @@ import med.voll.api.domain.endereco.Endereco;
 @Table(name = "pacientes")
 public class Paciente {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String nome;
     private String email;
     private String cpf;
@@ -26,6 +29,11 @@ public class Paciente {
     @Embedded
     private Endereco endereco;
     private Boolean ativo;
+    
+    //RELACIONAMENTO DE PACIENTE COM USUARIO
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
 
     public Paciente(DadosCadastroPaciente dados) {
         this.ativo = true;
