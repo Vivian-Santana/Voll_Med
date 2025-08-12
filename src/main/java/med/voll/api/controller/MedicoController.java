@@ -41,7 +41,6 @@ public class MedicoController {
 
     @PostMapping
     @Transactional
-    @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")//TESTAR
     public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroMedico dados, UriComponentsBuilder uriBuilder) {
         
     	var usuario = new Usuario(
@@ -54,7 +53,7 @@ public class MedicoController {
             
         // ASSOCIA O USUÁRIO AO MÉDICO
     	var medico = new Medico(dados);
-    	medico.setUsuario(usuario); // ESSA LINHA É ESSENCIAL ***************
+    	medico.setUsuario(usuario);
         
     	//System.out.println("Usuário criado com ID: " + usuario.getId());
         //System.out.println("Médico associando usuário: " + (medico.getUsuario() != null ? medico.getUsuario().getId() : "null"));
@@ -66,12 +65,12 @@ public class MedicoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('MEDICO')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
     	
-    	var login = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    	var usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     	
-    	if (!(login instanceof Usuario usuario) || !usuario.getRole().equals(Usuario.Role.ROLE_ADMIN)) {
+    	if (!(usuarioLogado instanceof Usuario usuario) || !usuario.getRole().equals(Usuario.Role.ROLE_ADMIN)) {
     		throw new AccessDeniedException("Acesso negado");
         }
   	
@@ -83,9 +82,9 @@ public class MedicoController {
     @Transactional
     @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")
     public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoMedicos dados) {
-    	String login = SecurityContextHolder.getContext().getAuthentication().getName();
+    	String usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
     	
-    	 var medico = repository.findByUsuarioLogin(login)
+    	 var medico = repository.findByUsuarioLogin(usuarioLogado)
     		        .orElseThrow(() -> new RuntimeException("Médico não encontrado."));
 
     		    if (!medico.getId().equals(dados.id())) {
@@ -99,16 +98,12 @@ public class MedicoController {
 
     @DeleteMapping("/{id}")//SOFT DELETE
     @Transactional
-    @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")
-    public ResponseEntity excluir(@PathVariable Long id, Authentication authentication) {    		
-    	var login = SecurityContextHolder.getContext().getAuthentication().getName();
-    	
+    @PreAuthorize(
+    	    "hasRole('ADMIN') or " +
+    	    "(hasRole('MEDICO') and #id == principal.id)"
+    	)
+    public ResponseEntity excluir(@PathVariable Long id, Authentication authentication) {    		    	
     	var medico = repository.getReferenceById(id);
-    	
-    	if (!medico.getUsuario().getLogin().equals(login)) {
-            throw new AccessDeniedException("Acesso negado.");
-        }
-    	
         medico.excluir();
         return ResponseEntity.ok("Médico desativado com sucesso!");
     }
@@ -116,14 +111,14 @@ public class MedicoController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")
     public ResponseEntity<?> detalhar(@PathVariable Long id, Authentication authentication) {
-        var login = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         var medico = repository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
 
         // SE FOR MÉDICO E NÃO FOR DONO DOS DADOS, LANÇA EXCEÇÃO ACCESSDENIEDEXCEPTION PARA SER TRATADA PELO HANDLER
-        if (login.getRole().equals(Usuario.Role.ROLE_MEDICO) &&
-            !medico.getUsuario().getId().equals(login.getId())) {
+        if (usuarioLogado.getRole().equals(Usuario.Role.ROLE_MEDICO) &&
+            !medico.getUsuario().getId().equals(usuarioLogado.getId())) {
             throw new AccessDeniedException("Acesso negado.");
         }
 

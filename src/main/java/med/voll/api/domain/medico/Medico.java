@@ -29,8 +29,8 @@ public class Medico {
     private Especialidade especialidade;
     
     //RELACIONAMENTO DE MEDICO COM USUARIO
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)//APLICAR A MIGRATION PARA MUDAR O RELACIONAMENTO
+    @JoinColumn(name = "usuario_id", unique = true)
     private Usuario usuario;
 
 

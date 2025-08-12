@@ -9,6 +9,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -31,7 +33,6 @@ public class Usuario implements UserDetails {
     private Role role;
 
     public enum Role {
-        //ROLE_USER,
         ROLE_ADMIN,
         ROLE_MEDICO,
         ROLE_PACIENTE
@@ -42,10 +43,15 @@ public class Usuario implements UserDetails {
     	if (this.role == null) {
             throw new IllegalStateException("Usuário sem role definida!");
         }
-        return List.of(new SimpleGrantedAuthority(("ROLE_ADMIN")));
+        return List.of(new SimpleGrantedAuthority(this.role.name()));
     }
 
+    public Long getId() {
+        return this.id;
+    }
+    
     @Override
+    @JsonIgnore
     public String getPassword() {
         return senha;
     }

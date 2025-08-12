@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,12 @@ public class PacienteController {
 	
 	@Autowired
 	private UsuarioRepository usuarioRepository;
+	
+	private final PacienteRepository pacienteRepository;
+
+    public PacienteController(PacienteRepository pacienteRepository) {
+        this.pacienteRepository = pacienteRepository;
+    }
 
     @PostMapping
     @Transactional
@@ -61,14 +68,8 @@ public class PacienteController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or " + "(hasRole('PACIENTE') and #id == principal.id)")
     public ResponseEntity<Page<DadosListagemPaciente>>listar(@PageableDefault(page = 0, size = 10, sort = {"nome"})Pageable paginacao) {
-    	var usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    	
-    	if (!(usuarioLogado instanceof Usuario usuario) || !usuario.getRole().equals(Usuario.Role.ROLE_ADMIN)) {
-    		throw new AccessDeniedException("Acesso negado");
-        }
-    	
     	var page = repository.findAllByAtivoTrue(paginacao)
         		.map(DadosListagemPaciente::new);
         return ResponseEntity.ok(page);
@@ -77,51 +78,59 @@ public class PacienteController {
     @PutMapping
     @Transactional
     @PreAuthorize("hasAnyRole('PACIENTE', 'ADMIN')")
-    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoPaciente dados) {
-    	var usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
-    	
-    	var paciente = repository.findByUsuarioLogin(usuarioLogado)
-		        .orElseThrow(() -> new RuntimeException("Paciente não encontrado."));
+    public ResponseEntity<?> atualizar(@RequestBody @Valid DadosAtualizacaoPaciente dados,
+                                       @AuthenticationPrincipal Usuario usuarioLogado) {
 
-		    if (!paciente.getId().equals(dados.id())) {
-		    	throw new AccessDeniedException("Acesso negado.");
-		    }
-    	
-		    paciente.atualizarInformacoes(dados);
-       
+        // Se for PACIENTE atualiza só ele mesmo
+        if (usuarioLogado.getRole() == Usuario.Role.ROLE_PACIENTE) {
+            var paciente = repository.findByUsuarioLogin(usuarioLogado.getLogin())
+                    .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+
+            if (!paciente.getId().equals(dados.id())) {
+                throw new AccessDeniedException("Acesso negado");
+            }
+
+            paciente.atualizarInformacoes(dados);
+            return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
+        }
+
+        // Se for ADMIN pode atualizar qualquer paciente
+        var paciente = repository.findById(dados.id())
+                .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+
+        paciente.atualizarInformacoes(dados);
         return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
     }
 
-    @DeleteMapping("/{id}")//SOFT DELETE
-    @Transactional
-    @PreAuthorize("hasAnyRole('PACIENTE', 'ADMIN')")
-    public ResponseEntity remover(@PathVariable Long id, Authentication authentication) {
-    	var usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
-    	
-        var paciente = repository.getReferenceById(id);
-        
-        if (!paciente.getUsuario().getLogin().equals(usuarioLogado)) {
-            throw new AccessDeniedException("Acesso negado.");
-        }
-        
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @pacienteRepository.findById(#id).get().usuario.id == principal.id")
+    public ResponseEntity<?> remover(@PathVariable Long id) {
+    	var paciente = pacienteRepository.findById(id)
+    	        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
+   
         paciente.inativar();
         return ResponseEntity.ok("Paciente desativado com sucesso!");
-    }
-   
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('PACIENTE', 'ADMIN')")
-    public ResponseEntity<?> detalhar(@PathVariable Long id) {
-        var usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+    } 
+  
+	@GetMapping("/{id}")
+	@PreAuthorize("hasAnyRole('ADMIN') or " + "(hasRole('PACIENTE') and #id == principal.id)")
+	public ResponseEntity<?> detalhar(@PathVariable Long id) {
+		var paciente = repository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
 
-        var paciente = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
+		return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
+	}
+    
+    @GetMapping("/teste-principal")
+    public ResponseEntity<String> testarPrincipal(@AuthenticationPrincipal Object principal) {
+        System.out.println("Tipo do principal: " + principal.getClass().getName());
 
-        if (usuarioLogado.getRole().equals(Usuario.Role.ROLE_PACIENTE) &&
-            !paciente.getUsuario().getId().equals(usuarioLogado.getId())) {
-            throw new AccessDeniedException("Acesso negado.");
+        if (principal instanceof Usuario usuario) {
+            return ResponseEntity.ok("Principal é um Usuario! ID: " + usuario.getId());
+        } else {
+            return ResponseEntity.ok("Principal NÃO é um Usuario. É: " + principal.getClass().getSimpleName());
         }
-
-        return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
     }
     
 }

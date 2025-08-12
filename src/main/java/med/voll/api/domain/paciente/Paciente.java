@@ -1,11 +1,15 @@
 package med.voll.api.domain.paciente;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import med.voll.api.domain.consulta.Consulta;
 import med.voll.api.domain.endereco.Endereco;
 import med.voll.api.domain.usuario.Usuario;
 
@@ -30,9 +34,8 @@ public class Paciente {
     private Endereco endereco;
     private Boolean ativo;
     
-    //RELACIONAMENTO DE PACIENTE COM USUARIO
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "usuario_id", unique = true)
     private Usuario usuario;
 
     public Paciente(DadosCadastroPaciente dados) {
@@ -56,6 +59,9 @@ public class Paciente {
             endereco.atualizarInformacoes(dados.endereco());
         }
     }
+
+    @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Consulta> consultas = new ArrayList<>();
 
     public void inativar() {
         this.ativo = false;
