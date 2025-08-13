@@ -30,6 +30,12 @@ public class TratadorDeErros {
 	public ResponseEntity tratarErro404() {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Recurso não encontrado");
 	}
+	
+	@ExceptionHandler(ContaNaoEncontradaException.class)
+	public ResponseEntity<?> tratarContaNaoEncontrada(ContaNaoEncontradaException ex) {
+	    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                         .body(new ErroDTO(ex.getMessage()));
+	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity tratarErro400(MethodArgumentNotValidException ex) {
@@ -44,7 +50,6 @@ public class TratadorDeErros {
 	        .status(HttpStatus.FORBIDDEN)
 	        .body(Map.of("Você não tem permissão para realizar esta ação", ex.getMessage()));
 	}
-
 
 	@ExceptionHandler(ValidacaoException.class)
 	public ResponseEntity tratarErroRegraDeNegocio(ValidacaoException ex) {
@@ -90,7 +95,7 @@ public class TratadorDeErros {
 	}
 	*/
 
-	// CLASSE PARA PADRONIZAR RESPOSTA
+	// CLASSE INTERNA PARA PADRONIZAR RESPOSTA
 	public record ErroDTO(String erro) {
 	}
 

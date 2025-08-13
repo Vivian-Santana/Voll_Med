@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import med.voll.api.domain.medico.MedicoRepository;
 import med.voll.api.domain.paciente.PacienteRepository;
 import med.voll.api.domain.usuario.Usuario.Role;
+import med.voll.api.infra.exception.ContaNaoEncontradaException;
 
 @Service
 public class AutenticacaoService implements UserDetailsService {
@@ -28,14 +29,14 @@ public class AutenticacaoService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByLogin(username)
-        		.orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+        		.orElseThrow(() -> new ContaNaoEncontradaException());
         
      // Verifica se é Paciente
         if (usuario.getRole() == Role.ROLE_PACIENTE) {
             var paciente = pacienteRepository.findByUsuarioId(usuario.getId())
                     .orElseThrow(() -> new UsernameNotFoundException("Conta não encontrada"));
             if (!paciente.getAtivo()) {
-                throw new UsernameNotFoundException("Conta não encontrada");
+                throw new ContaNaoEncontradaException();
             }
         }
 
@@ -44,7 +45,7 @@ public class AutenticacaoService implements UserDetailsService {
             var medico = medicoRepository.findByUsuarioId(usuario.getId())
                     .orElseThrow(() -> new UsernameNotFoundException("Conta não encontrada"));
             if (!medico.getAtivo()) {
-                throw new UsernameNotFoundException("Conta não encontrada");
+                throw new ContaNaoEncontradaException();
             }
         }
 

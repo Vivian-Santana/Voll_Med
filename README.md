@@ -5,6 +5,9 @@
 - CRUD (Create, Read, Update e Delete)
 - Validações
 - Paginação e ordenação
+- Implementação de autorização com roles
+- Criação de endpoint para redefinição de senha
+- Refinamento de validações
 
 ## Tecnologias
 - Spring Boot 3
@@ -14,3 +17,4 @@
 - JPA/ Hibernate
 - Maven
 - Postman
+- Swagger
