@@ -124,15 +124,4 @@ public class PacienteController {
 		return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
 	}
     
-    @GetMapping("/teste-principal")
-    public ResponseEntity<String> testarPrincipal(@AuthenticationPrincipal Object principal) {
-        System.out.println("Tipo do principal: " + principal.getClass().getName());
-
-        if (principal instanceof Usuario usuario) {
-            return ResponseEntity.ok("Principal é um Usuario! ID: " + usuario.getId());
-        } else {
-            return ResponseEntity.ok("Principal NÃO é um Usuario. É: " + principal.getClass().getSimpleName());
-        }
-    }
-    
 }

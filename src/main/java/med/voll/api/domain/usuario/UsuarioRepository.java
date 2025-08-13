@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     //UserDetails findByLogin(String login);
 	Optional<Usuario> findByLogin(String login);
+	
+	Optional<Usuario> findById(Long id);
 }
 /*
  * O SPRING SECURITY AUTENTICA USANDO O PRÓPRIO OBJETO USUARIO.
