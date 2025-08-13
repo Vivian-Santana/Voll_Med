@@ -104,6 +104,7 @@ public class PacienteController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @pacienteRepository.findById(#id).get().usuario.id == principal.id")
+    @Transactional
     public ResponseEntity<?> remover(@PathVariable Long id) {
     	var paciente = pacienteRepository.findById(id)
     	        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
@@ -114,7 +115,8 @@ public class PacienteController {
     } 
   
 	@GetMapping("/{id}")
-	@PreAuthorize("hasAnyRole('ADMIN') or " + "(hasRole('PACIENTE') and #id == principal.id)")
+	@PreAuthorize("hasRole('ADMIN') or @pacienteRepository.findById(#id).get().usuario.id == principal.id")
+	@Transactional
 	public ResponseEntity<?> detalhar(@PathVariable Long id) {
 		var paciente = repository.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
