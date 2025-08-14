@@ -2,6 +2,7 @@ package med.voll.api.controller;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import med.voll.api.domain.medico.*;
 import med.voll.api.domain.usuario.Usuario;
 import med.voll.api.domain.usuario.Usuario.Role;
@@ -26,17 +27,13 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("medicos")
 @SecurityRequirement(name = "bearer-key")
 public class MedicoController {
 	
-	@Autowired
     private MedicoRepository repository;
-	
-	@Autowired
 	private PasswordEncoder passwordEncoder;
-	
-	@Autowired
 	private UsuarioRepository usuarioRepository;
 
     @PostMapping

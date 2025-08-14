@@ -2,6 +2,7 @@ package med.voll.api.controller;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.paciente.*;
 import med.voll.api.domain.usuario.Usuario;
@@ -27,24 +28,16 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("pacientes")
 @SecurityRequirement(name = "bearer-key")
 public class PacienteController {
-
-    @Autowired
-    private PacienteRepository repository;
     
-    @Autowired
-	private PasswordEncoder passwordEncoder;
-	
-	@Autowired
-	private UsuarioRepository usuarioRepository;
-	
+	//private final PacienteRepository repository;
+	private final PasswordEncoder passwordEncoder;
+	private final UsuarioRepository usuarioRepository;
 	private final PacienteRepository pacienteRepository;
-
-    public PacienteController(PacienteRepository pacienteRepository) {
-        this.pacienteRepository = pacienteRepository;
-    }
+	
 
     @PostMapping
     @Transactional
@@ -61,7 +54,7 @@ public class PacienteController {
         var paciente = new Paciente(dados);
         paciente.setUsuario(usuario);
         	
-        repository.save(paciente);
+        pacienteRepository.save(paciente);
             
         var uri = uriBuilder.path("/pacientes/{id}").buildAndExpand(paciente.getId()).toUri();
         return ResponseEntity.created(uri).body(new DadosDetalhamentoPaciente(paciente));
@@ -70,7 +63,7 @@ public class PacienteController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN') or " + "(hasRole('PACIENTE') and #id == principal.id)")
     public ResponseEntity<Page<DadosListagemPaciente>>listar(@PageableDefault(page = 0, size = 10, sort = {"nome"})Pageable paginacao) {
-    	var page = repository.findAllByAtivoTrue(paginacao)
+    	var page = pacienteRepository.findAllByAtivoTrue(paginacao)
         		.map(DadosListagemPaciente::new);
         return ResponseEntity.ok(page);
     }
@@ -83,7 +76,7 @@ public class PacienteController {
 
         // Se for PACIENTE atualiza só ele mesmo
         if (usuarioLogado.getRole() == Usuario.Role.ROLE_PACIENTE) {
-            var paciente = repository.findByUsuarioLogin(usuarioLogado.getLogin())
+            var paciente = pacienteRepository.findByUsuarioLogin(usuarioLogado.getLogin())
                     .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
 
             if (!paciente.getId().equals(dados.id())) {
@@ -95,7 +88,7 @@ public class PacienteController {
         }
 
         // Se for ADMIN pode atualizar qualquer paciente
-        var paciente = repository.findById(dados.id())
+        var paciente = pacienteRepository.findById(dados.id())
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
 
         paciente.atualizarInformacoes(dados);
@@ -118,7 +111,7 @@ public class PacienteController {
 	@PreAuthorize("hasRole('ADMIN') or @pacienteRepository.findById(#id).get().usuario.id == principal.id")
 	@Transactional
 	public ResponseEntity<?> detalhar(@PathVariable Long id) {
-		var paciente = repository.findById(id)
+		var paciente = pacienteRepository.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Paciente não encontrado"));
 
 		return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
