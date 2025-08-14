@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import med.voll.api.domain.medico.*;
+import med.voll.api.domain.paciente.DadosDetalhamentoPaciente;
 import med.voll.api.domain.usuario.Usuario;
 import med.voll.api.domain.usuario.Usuario.Role;
 import med.voll.api.domain.usuario.UsuarioRepository;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,9 +34,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 @SecurityRequirement(name = "bearer-key")
 public class MedicoController {
 	
-    private MedicoRepository repository;
-	private PasswordEncoder passwordEncoder;
-	private UsuarioRepository usuarioRepository;
+    private final MedicoRepository medicorepository;
+	private final PasswordEncoder passwordEncoder;
+	private final UsuarioRepository usuarioRepository;
 
     @PostMapping
     @Transactional
@@ -55,7 +57,7 @@ public class MedicoController {
     	//System.out.println("Usuário criado com ID: " + usuario.getId());
         //System.out.println("Médico associando usuário: " + (medico.getUsuario() != null ? medico.getUsuario().getId() : "null"));
         
-    	repository.save(medico);
+    	medicorepository.save(medico);
 
         var uri = uriBuilder.path("medicos/{id}").buildAndExpand(medico.getId()).toUri();
         return ResponseEntity.created(uri).body(new DadosDetalhamentoMedico(medico));
@@ -64,60 +66,53 @@ public class MedicoController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
-    	
-    	var usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    	
-    	if (!(usuarioLogado instanceof Usuario usuario) || !usuario.getRole().equals(Usuario.Role.ROLE_ADMIN)) {
-    		throw new AccessDeniedException("Acesso negado");
-        }
-  	
-    	var page = repository.findAllByAtivoTrue(paginacao).map(DadosListagemMedico::new);
+    	var page = medicorepository.findAllByAtivoTrue(paginacao)
+    			.map(DadosListagemMedico::new);
         return ResponseEntity.ok(page);
     }
 
     @PutMapping
     @Transactional
     @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")
-    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoMedicos dados) {
-    	String usuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoMedicos dados,
+    								@AuthenticationPrincipal Usuario usuarioLogado) {
     	
-    	 var medico = repository.findByUsuarioLogin(usuarioLogado)
-    		        .orElseThrow(() -> new RuntimeException("Médico não encontrado."));
+        if (usuarioLogado.getRole() == Usuario.Role.ROLE_MEDICO) {
+            var medico = medicorepository.findByUsuarioLogin(usuarioLogado.getLogin())
+                    .orElseThrow(() -> new RuntimeException("Médico não encontrado"));
 
-    		    if (!medico.getId().equals(dados.id())) {
-    		    	throw new AccessDeniedException("Acesso negado.");
-    		    }
+            if (!medico.getId().equals(dados.id())) {
+                throw new AccessDeniedException("Acesso negado");
+            }
 
-    		    medico.atualizarInformacoes(dados);
+            medico.atualizarInformacoes(dados);
+            return ResponseEntity.ok(new DadosDetalhamentoMedico(medico));
+        }
+
+        var medico = medicorepository.findById(dados.id())
+                .orElseThrow(() -> new RuntimeException("Médico não encontrado"));
+
+    	medico.atualizarInformacoes(dados);
 
         return ResponseEntity.ok(new DadosDetalhamentoMedico(medico));
     }
 
     @DeleteMapping("/{id}")//SOFT DELETE
     @Transactional
-    @PreAuthorize(
-    	    "hasRole('ADMIN') or " +
-    	    "(hasRole('MEDICO') and #id == principal.id)"
-    	)
-    public ResponseEntity excluir(@PathVariable Long id, Authentication authentication) {    		    	
-    	var medico = repository.getReferenceById(id);
+    @PreAuthorize("hasRole('ADMIN') or " + "(hasRole('MEDICO') and #id == principal.id)")
+    public ResponseEntity<?> excluir(@PathVariable Long id, Authentication authentication) {	    	
+    	var medico = medicorepository.findById(id)
+    			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
+    	
         medico.excluir();
         return ResponseEntity.ok("Médico desativado com sucesso!");
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or @medicorepository.findById(#id).get().usuario.id == principal.id")
     public ResponseEntity<?> detalhar(@PathVariable Long id, Authentication authentication) {
-        var usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        var medico = repository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
-
-        // SE FOR MÉDICO E NÃO FOR DONO DOS DADOS, LANÇA EXCEÇÃO ACCESSDENIEDEXCEPTION PARA SER TRATADA PELO HANDLER
-        if (usuarioLogado.getRole().equals(Usuario.Role.ROLE_MEDICO) &&
-            !medico.getUsuario().getId().equals(usuarioLogado.getId())) {
-            throw new AccessDeniedException("Acesso negado.");
-        }
+    	var medico = medicorepository.findById(id)
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
 
         return ResponseEntity.ok(new DadosDetalhamentoMedico(medico));
     }

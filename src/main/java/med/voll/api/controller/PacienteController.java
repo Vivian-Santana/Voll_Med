@@ -33,12 +33,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 @SecurityRequirement(name = "bearer-key")
 public class PacienteController {
     
-	//private final PacienteRepository repository;
 	private final PasswordEncoder passwordEncoder;
 	private final UsuarioRepository usuarioRepository;
 	private final PacienteRepository pacienteRepository;
 	
-
     @PostMapping
     @Transactional
     public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroPaciente dados, UriComponentsBuilder uriBuilder) {
@@ -104,7 +102,6 @@ public class PacienteController {
    
         paciente.inativar();
         return ResponseEntity.ok("Paciente desativado com sucesso!");
-        
     } 
   
 	@GetMapping("/{id}")

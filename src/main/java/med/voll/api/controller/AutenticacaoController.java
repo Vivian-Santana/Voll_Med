@@ -52,7 +52,7 @@ public class AutenticacaoController {
 
     //endpoint de teste Retorna o ID do usuario logado (tabela usuarios)
     @GetMapping("/teste-principal")
-    public ResponseEntity<String> testarPrincipal(@AuthenticationPrincipal Object principal) {
+    public ResponseEntity<?> testarPrincipal(@AuthenticationPrincipal Object principal) {
         System.out.println("Tipo do principal: " + principal.getClass().getName());
 
         if (principal instanceof Usuario usuario) {
