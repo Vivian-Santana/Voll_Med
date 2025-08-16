@@ -34,22 +34,24 @@ public class SecurityConfigurations {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
                 	
-                	
+                	//É SÓ NECESSÁRIO ESTAR AUTENTICADO (AUTHENTICATED()), SEM EXIGIR ROLE ESPECÍFICA.
+                	req.requestMatchers(HttpMethod.PATCH, "/usuarios/reset-senha").authenticated();
+             	
                 	// LIBERA LOGIN E SWAGGER
                     req.requestMatchers("/login").permitAll();             
                     req.requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll();        
 
                     // LIBERA CADASTRO PARA MÉDICOS E PACIENTES
                     req.requestMatchers(HttpMethod.POST, "/medicos").permitAll();
-                    req.requestMatchers(HttpMethod.PUT, "/medicos").permitAll();
-                    req.requestMatchers(HttpMethod.POST, "/pacientes").permitAll();
-                    req.requestMatchers(HttpMethod.PUT, "/pacientes").permitAll();
+                    req.requestMatchers(HttpMethod.PUT, "/medicos").permitAll();//mudar para .authenticated();
+                    req.requestMatchers(HttpMethod.POST, "/pacientes").permitAll();//mudar para .authenticated();
+                    req.requestMatchers(HttpMethod.PUT, "/pacientes").permitAll();//mudar para .authenticated();
 
                     // RESTRINGE LEITURA DE DADOS AOS SEUS RESPECTIVOS PAPÉIS
-                    req.requestMatchers(HttpMethod.GET, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
-                    req.requestMatchers(HttpMethod.DELETE, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
-                    req.requestMatchers(HttpMethod.GET, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
-                    req.requestMatchers(HttpMethod.DELETE, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
+                    req.requestMatchers(HttpMethod.GET, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");//mudar para .authenticated();
+                    req.requestMatchers(HttpMethod.DELETE, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");//mudar para .authenticated();
+                    req.requestMatchers(HttpMethod.GET, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");//mudar para .authenticated();
+                    req.requestMatchers(HttpMethod.DELETE, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");//mudar para .authenticated();
 
                     // O ADMIN PODE ACESSAR TUDO
                     req.requestMatchers("/admin/**").hasRole("ADMIN");

@@ -35,16 +35,36 @@ public class SecurityFilter extends OncePerRequestFilter {
             var usuario = repository.findByLogin(subject)
             		.orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + subject));
 
-            var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+            var authentication = new UsernamePasswordAuthenticationToken(
+            		usuario,
+            		null, 
+            		usuario.getAuthorities()            
+            );
+            
+            /*teste
+            if (usuario != null) {
+                System.out.println("✅ Usuário autenticado: " + usuario.getLogin());
+            } else {
+                System.out.println("❌ Usuário não encontrado ou token inválido");
+            }
+            */
+
+            
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+
+        /*teste
+        System.out.println("🔍 Requisição recebida em: " + request.getMethod() + " " + request.getRequestURI());
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("🔍 Authorization Header: " + authHeader);
+        */
 
         filterChain.doFilter(request, response);
     }
 
     private String recuperarToken(HttpServletRequest request) {
         var authorizationHeader = request.getHeader("Authorization");
-        if (authorizationHeader != null) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             return authorizationHeader.replace("Bearer ", "");
         }
         return null;

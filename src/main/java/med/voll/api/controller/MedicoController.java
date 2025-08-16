@@ -99,7 +99,7 @@ public class MedicoController {
 
     @DeleteMapping("/{id}")//SOFT DELETE
     @Transactional
-    @PreAuthorize("hasRole('ADMIN') or " + "(hasRole('MEDICO') and #id == principal.id)")
+    @PreAuthorize("hasRole('ADMIN') or @medicoRepository.findById(#id).get().usuario.id == principal.id")
     public ResponseEntity<?> excluir(@PathVariable Long id, Authentication authentication) {	    	
     	var medico = medicorepository.findById(id)
     			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));
@@ -109,7 +109,7 @@ public class MedicoController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or @medicorepository.findById(#id).get().usuario.id == principal.id")
+    @PreAuthorize("hasRole('ADMIN') or @medicoRepository.findById(#id).get().usuario.id == principal.id")
     public ResponseEntity<?> detalhar(@PathVariable Long id, Authentication authentication) {
     	var medico = medicorepository.findById(id)
 				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Médico não encontrado"));

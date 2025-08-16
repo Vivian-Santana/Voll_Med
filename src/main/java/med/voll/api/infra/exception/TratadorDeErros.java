@@ -83,8 +83,13 @@ public class TratadorDeErros {
 
 		return ResponseEntity.badRequest().body(new ErroDTO("Formato de valor inválido."));
 	}
-
 	
+	@ExceptionHandler(IllegalArgumentException.class)
+	public ResponseEntity<MensagemResponse> tratarIllegalArgument(IllegalArgumentException ex) {
+	    return ResponseEntity.badRequest().body(new MensagemResponse(ex.getMessage()));
+	}
+
+
 	// FALLBACK PARA QUALQUER EXCEÇÃO NÃO TRATADA
 	/*
 	@ExceptionHandler(Exception.class)
@@ -99,4 +104,8 @@ public class TratadorDeErros {
 	public record ErroDTO(String erro) {
 	}
 
+	public record MensagemResponse(String mensagem) 
+	{ 
+		
+	}
 }

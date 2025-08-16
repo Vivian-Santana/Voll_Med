@@ -4,28 +4,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import med.voll.api.domain.medico.MedicoRepository;
 import med.voll.api.domain.paciente.PacienteRepository;
 import med.voll.api.domain.usuario.Usuario.Role;
 import med.voll.api.infra.exception.ContaNaoEncontradaException;
 
 @Service
+@RequiredArgsConstructor
 public class AutenticacaoService implements UserDetailsService {
 	
 	private final UsuarioRepository usuarioRepository;
     private final PacienteRepository pacienteRepository;
     private final MedicoRepository medicoRepository;
 
-    @Autowired
-    public AutenticacaoService(UsuarioRepository usuarioRepository,
-                               PacienteRepository pacienteRepository,
-                               MedicoRepository medicoRepository) {
-        this.usuarioRepository = usuarioRepository;
-        this.pacienteRepository = pacienteRepository;
-        this.medicoRepository = medicoRepository;
-    }
-    
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Usuario usuario = usuarioRepository.findByLogin(username)
