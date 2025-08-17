@@ -43,15 +43,15 @@ public class SecurityConfigurations {
 
                     // LIBERA CADASTRO PARA MÉDICOS E PACIENTES
                     req.requestMatchers(HttpMethod.POST, "/medicos").permitAll();
-                    req.requestMatchers(HttpMethod.PUT, "/medicos").permitAll();//mudar para .authenticated();
-                    req.requestMatchers(HttpMethod.POST, "/pacientes").permitAll();//mudar para .authenticated();
-                    req.requestMatchers(HttpMethod.PUT, "/pacientes").permitAll();//mudar para .authenticated();
+                    req.requestMatchers(HttpMethod.PUT, "/medicos").permitAll();
+                    req.requestMatchers(HttpMethod.POST, "/pacientes").permitAll();
+                    req.requestMatchers(HttpMethod.PUT, "/pacientes").permitAll();
 
                     // RESTRINGE LEITURA DE DADOS AOS SEUS RESPECTIVOS PAPÉIS
-                    req.requestMatchers(HttpMethod.GET, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");//mudar para .authenticated();
-                    req.requestMatchers(HttpMethod.DELETE, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");//mudar para .authenticated();
-                    req.requestMatchers(HttpMethod.GET, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");//mudar para .authenticated();
-                    req.requestMatchers(HttpMethod.DELETE, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");//mudar para .authenticated();
+                    req.requestMatchers(HttpMethod.GET, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
+                    req.requestMatchers(HttpMethod.DELETE, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
+                    req.requestMatchers(HttpMethod.GET, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
+                    req.requestMatchers(HttpMethod.DELETE, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
 
                     // O ADMIN PODE ACESSAR TUDO
                     req.requestMatchers("/admin/**").hasRole("ADMIN");

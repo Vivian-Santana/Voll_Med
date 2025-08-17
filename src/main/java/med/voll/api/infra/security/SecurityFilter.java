@@ -27,6 +27,14 @@ public class SecurityFilter extends OncePerRequestFilter {
     								HttpServletResponse response, 
     								FilterChain filterChain) 
     		  throws ServletException, IOException {
+    	 
+    	var requestURI = request.getRequestURI();
+
+    	    //Bypass no login (não tenta validar token aqui)
+    	    if (requestURI.equals("/login")) {
+    	        filterChain.doFilter(request, response);
+    	        return;
+    	    }
     	
         var tokenJWT = recuperarToken(request);
 
