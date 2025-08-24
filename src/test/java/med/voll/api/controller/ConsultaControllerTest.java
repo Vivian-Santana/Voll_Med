@@ -58,7 +58,7 @@ class ConsultaControllerTest {
         var data = LocalDateTime.now().plusHours(1);
         var especialidade = Especialidade.CARDIOLOGIA;
 
-        var dadosDetalhamento = new DadosDetalhamentoConsulta(null, 2l, 5l, data);
+        var dadosDetalhamento = new DadosDetalhamentoConsulta(null);
 
         when(agendaDeConsultas.agendar(any())).thenReturn(dadosDetalhamento);
 

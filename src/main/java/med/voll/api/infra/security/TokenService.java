@@ -25,6 +25,8 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("API Voll.med")
                     .withSubject(usuario.getLogin())
+                    .withClaim("id", usuario.getId())             // NOVO CAMPO: ID DO USUÁRIO
+                    .withClaim("role", usuario.getRole().name())  // NOVO CAMPO: ROLE DO USUÁRIO
                     .withExpiresAt(dataExpiracao())
                     .sign(algoritmo);
         } catch (JWTCreationException exception) {
@@ -44,6 +46,35 @@ public class TokenService {
             throw new RuntimeException("Token JWT inválido ou expirado!");
         }
     }
+   
+/*
+    public Long getUserId(String token) {
+    	try {
+	    	var algoritmo = Algorithm.HMAC256(secret);
+	        return JWT.require(algoritmo)
+	                  .withIssuer("API Voll.med")
+	                  .build()
+	                  .verify(token)
+	                  .getClaim("id").asLong();
+	    } catch (JWTVerificationException exception) {
+	        throw new RuntimeException("Token JWT inválido ou expirado!");
+	    }
+        
+    }
+
+    public String getUserRole(String token) {
+    	try {
+	    	var algoritmo = Algorithm.HMAC256(secret);
+	        return JWT.require(algoritmo)
+	                  .withIssuer("API Voll.med")
+	                  .build()
+	                  .verify(token)
+	                  .getClaim("role").asString();
+    	} catch (JWTVerificationException exception) {
+            throw new RuntimeException("Token JWT inválido ou expirado!");
+        }
+    }
+*/
 
     private Instant dataExpiracao() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));

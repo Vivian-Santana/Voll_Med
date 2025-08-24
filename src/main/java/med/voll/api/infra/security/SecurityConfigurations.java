@@ -31,6 +31,7 @@ public class SecurityConfigurations {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
         		.csrf(csrf -> csrf.disable())
+        		.cors(cors -> cors.configurationSource(new CorsConfig().corsConfigurationSource())) // chama CorsConfig
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
                 	

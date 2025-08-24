@@ -50,6 +50,10 @@ public class Usuario implements UserDetails {
         return id;
     }
     
+    public Enum getRole() {
+        return role;
+    }
+    
     @Override
     @JsonIgnore
     public String getPassword() {

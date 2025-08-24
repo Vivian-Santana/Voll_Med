@@ -1,5 +1,20 @@
 package med.voll.api.controller;
 
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -7,18 +22,10 @@ import med.voll.api.domain.consulta.AgendaDeConsultas;
 import med.voll.api.domain.consulta.ConsultaRepository;
 import med.voll.api.domain.consulta.DadosAgendamentoConsulta;
 import med.voll.api.domain.consulta.DadosCancelamentoConsulta;
-import med.voll.api.domain.consulta.DadosConsultaPacienteDTO;
+import med.voll.api.domain.consulta.DadosDetalhamentoConsulta;
+import med.voll.api.domain.paciente.Paciente;
 import med.voll.api.domain.paciente.PacienteRepository;
-import med.voll.api.domain.usuario.UsuarioRepository;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import med.voll.api.domain.usuario.Usuario;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,17 +55,32 @@ public class ConsultaController {
     
     @GetMapping("/{id}/consultas")
     @PreAuthorize("hasRole('ADMIN') or @pacienteRepository.findById(#id).get().usuario.id == principal.id")
-    public ResponseEntity<List<DadosConsultaPacienteDTO>> listarConsultas(@PathVariable Long id) {
+    public ResponseEntity<List<DadosDetalhamentoConsulta>> listarConsultas(@PathVariable Long id) {
     
         if (!pacienteRepository.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
     	
     	var consultas = consultaRepository.findByPacienteId(id)
-    									  .stream().map(DadosConsultaPacienteDTO::new)
+    									  .stream().map(DadosDetalhamentoConsulta::new)
     									  .toList();
         
     	return ResponseEntity.ok(consultas);
+    }
+
+    // ENDPOINT PARA O FRONT PEGAR CONSULTAS SEM PRECISAR PASSAR O ID DO PACIENTE
+    @GetMapping("/minhas/consultas")
+    @PreAuthorize("hasRole('PACIENTE')")
+    public ResponseEntity<List<DadosDetalhamentoConsulta>> minhasConsultas(Authentication auth) {
+        Usuario usuario = (Usuario) auth.getPrincipal();
+        Paciente paciente = pacienteRepository.findByUsuarioId(usuario.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        List<DadosDetalhamentoConsulta> consultas = consultaRepository
+                .findByPacienteId(paciente.getId())
+                .stream()
+                .map(DadosDetalhamentoConsulta::new)
+                .toList();
+        return ResponseEntity.ok(consultas);
     }
 
 }

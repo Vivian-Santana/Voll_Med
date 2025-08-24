@@ -3,6 +3,7 @@ package med.voll.api.controller;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,21 +30,11 @@ public class AutenticacaoController {
         var authentication = authenticationManager.authenticate(authenticationToken);
 
         var tokenJWT = tokenService.gerarToken((Usuario) authentication.getPrincipal());
+        
+        var usuario = (Usuario) authentication.getPrincipal();//*
 
-        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
+        //*adaptação retorna o id do usuario e a role junto com o token
+        return ResponseEntity.ok(new DadosTokenJWT(tokenJWT, usuario.getId(), usuario.getRole().name()));
     }
-
-    /*endpoint de teste Retorna o ID do usuario logado (tabela usuarios)
-    @GetMapping("/teste-principal")
-    public ResponseEntity<?> testarPrincipal(@AuthenticationPrincipal Object principal) {
-        System.out.println("Tipo do principal: " + principal.getClass().getName());
-
-        if (principal instanceof Usuario usuario) {
-            return ResponseEntity.ok("Principal é um Usuario! ID: " + usuario.getId());
-        } else {
-            return ResponseEntity.ok("Principal NÃO é um Usuario. É: " + principal.getClass().getSimpleName());
-        }
-    }
-    */
 
 }
