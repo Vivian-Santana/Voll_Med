@@ -10,6 +10,8 @@ import med.voll.api.domain.usuario.UsuarioRepository;
 import med.voll.api.domain.usuario.Usuario.Role;
 import med.voll.api.domain.paciente.*;
 
+import java.util.Map;
+
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -36,6 +38,7 @@ public class PacienteController {
 	private final PasswordEncoder passwordEncoder;
 	private final UsuarioRepository usuarioRepository;
 	private final PacienteRepository pacienteRepository;
+	private final PacienteService pacienteService;
 	
     @PostMapping
     @Transactional
@@ -104,7 +107,8 @@ public class PacienteController {
         return ResponseEntity.ok("Paciente desativado com sucesso!");
     } 
   
-	@GetMapping("/{id}")
+	// Busca dados pegando apenas pelo idPaciente
+    @GetMapping("/{id}")
 	@PreAuthorize("hasRole('ADMIN') or @pacienteRepository.findById(#id).get().usuario.id == principal.id")
 	@Transactional
 	public ResponseEntity<?> detalhar(@PathVariable Long id) {
@@ -113,5 +117,25 @@ public class PacienteController {
 
 		return ResponseEntity.ok(new DadosDetalhamentoPaciente(paciente));
 	}
+	
+	// Ex.: GET /pacientes/usuario/42
+	// Este endpoint busca dados completos do paciente dado o id do usuário, retorna os dados do paciente correspondente
+    @GetMapping("/usuario/{idUsuario}")
+    @PreAuthorize("hasAnyRole('ADMIN','PACIENTE','MEDICO')")
+    public ResponseEntity<DadosPacienteUsuario> buscarPorUsuario(@PathVariable Long idUsuario) {
+        var dadosPaciente = pacienteService.buscarPorIdUsuario(idUsuario);
+        return ResponseEntity.ok(dadosPaciente);
+    }
     
+    // retorna apenas o idPaciente a partir do idUsuario:
+    @GetMapping("/usuarios/{idUsuario}/paciente-id")
+    @PreAuthorize("hasAnyRole('ADMIN','PACIENTE')")
+    public ResponseEntity<?> getPacienteId(@PathVariable Long idUsuario) {
+        var paciente = pacienteRepository.findByUsuarioId(idUsuario);
+        if (paciente.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(Map.of("idPaciente", paciente.get().getId()));
+    }
+
 }
