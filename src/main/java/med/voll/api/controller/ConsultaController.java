@@ -30,6 +30,7 @@ import med.voll.api.domain.consulta.DadosAgendamentoConsulta;
 import med.voll.api.domain.consulta.DadosCancelamentoConsulta;
 import med.voll.api.domain.consulta.DadosDetalhamentoConsulta;
 import med.voll.api.domain.consulta.MotivoCancelamento;
+import med.voll.api.domain.medico.DadosAgendamentoPorNomeMedico;
 import med.voll.api.domain.paciente.Paciente;
 import med.voll.api.domain.paciente.PacienteRepository;
 import med.voll.api.domain.usuario.Usuario;
@@ -50,6 +51,13 @@ public class ConsultaController {
     @Transactional
     public ResponseEntity agendar(@RequestBody @Valid DadosAgendamentoConsulta dados) {
         var dto = agenda.agendar(dados);
+        return ResponseEntity.ok(dto);
+    }
+    
+    @PostMapping("/agendar-por-nome-medico")
+    @Transactional
+    public ResponseEntity agendarPorNome(@RequestBody @Valid DadosAgendamentoPorNomeMedico dados) {
+        var dto = agenda.agendarPorNome(dados);
         return ResponseEntity.ok(dto);
     }
 

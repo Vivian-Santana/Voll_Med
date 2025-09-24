@@ -20,6 +20,8 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
 	
 	Optional<Medico> findById(Long Id);
 	
+	Optional<Medico> findByNome(String nome);
+	
 	Page<Medico> findAllByAtivoTrue(Pageable paginacao);
   
 

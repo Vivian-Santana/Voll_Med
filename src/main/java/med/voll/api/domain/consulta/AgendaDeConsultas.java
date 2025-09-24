@@ -3,6 +3,7 @@ package med.voll.api.domain.consulta;
 import med.voll.api.domain.ValidacaoException;
 import med.voll.api.domain.consulta.validacoes.agendamento.ValidadorAgendamentoDeConsulta;
 import med.voll.api.domain.consulta.validacoes.cancelamento.ValidadorCancelamentoDeConsulta;
+import med.voll.api.domain.medico.DadosAgendamentoPorNomeMedico;
 import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
 import med.voll.api.domain.paciente.PacienteRepository;
@@ -51,6 +52,36 @@ public class AgendaDeConsultas {
 
         return new DadosDetalhamentoConsulta(consulta);
     }
+    
+    public DadosDetalhamentoConsulta agendarPorNome(DadosAgendamentoPorNomeMedico dados) {
+
+        if (!pacienteRepository.existsById(dados.idPaciente())) {
+            throw new ValidacaoException("Id do paciente informado não existe!");
+        }
+
+        Medico medico = medicoRepository.findByNome(dados.nomeMedico())
+                .orElseThrow(() -> new ValidacaoException("Médico com o nome informado não existe!"));
+
+        if (dados.especialidade() != null && !medico.getEspecialidade().name().equals(dados.especialidade())) {
+            throw new ValidacaoException("O médico informado não possui a especialidade indicada!");
+        }
+
+        validadores.forEach(v -> v.validar(
+                new DadosAgendamentoConsulta(
+                        medico.getId(),
+                        dados.idPaciente(),
+                        dados.data(),
+                        medico.getEspecialidade()
+                )
+        ));
+
+        var paciente = pacienteRepository.getReferenceById(dados.idPaciente());
+        var consulta = new Consulta(null, medico, paciente, dados.data(), null);
+        consultaRepository.save(consulta);
+
+        return new DadosDetalhamentoConsulta(consulta);
+    }
+
 
     private Medico escolherMedico(DadosAgendamentoConsulta dados) {
         if (dados.idMedico() != null) {
