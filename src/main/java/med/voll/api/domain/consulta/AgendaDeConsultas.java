@@ -8,8 +8,12 @@ import med.voll.api.domain.medico.Medico;
 import med.voll.api.domain.medico.MedicoRepository;
 import med.voll.api.domain.paciente.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -105,6 +109,22 @@ public class AgendaDeConsultas {
 
         var consulta = consultaRepository.getReferenceById(dados.idConsulta());
         consulta.cancelar(dados.motivo());
+    }
+    
+    public List<DadosDetalhamentoConsulta> listarConsultasDoPaciente(Long pacienteId) {
+    	var inicioHoje = LocalDate.now().atStartOfDay();
+        var fimInfinito = LocalDateTime.of(3000, 1, 1, 0, 0);
+
+        // busca as consultas ativas/futuras do paciente
+        var consultas = consultaRepository.buscarAtivasEFuturas(pacienteId, inicioHoje, fimInfinito)
+                                         .stream()
+                                         .sorted(Comparator.comparing(Consulta::getData)) // ordena por data
+                                         .toList();
+
+        // mapeia para DTO
+        return consultas.stream()
+                        .map(DadosDetalhamentoConsulta::new)
+                        .toList();
     }
 
 }

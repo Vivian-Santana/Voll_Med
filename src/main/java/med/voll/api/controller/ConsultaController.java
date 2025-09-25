@@ -77,7 +77,6 @@ public class ConsultaController {
         agenda.cancelar(new DadosCancelamentoConsulta(id, motivo));
         return ResponseEntity.noContent().build();
     }
-
     
     @GetMapping("/{id}/consultas")
     @PreAuthorize("hasRole('ADMIN') or @pacienteRepository.findById(#id).get().usuario.id == principal.id")
@@ -87,9 +86,8 @@ public class ConsultaController {
             return ResponseEntity.notFound().build();
         }
     	
-    	var consultas = consultaRepository.findByPacienteId(id)
-    									  .stream().map(DadosDetalhamentoConsulta::new)
-    									  .toList();
+        //chama o metodo da classe Service AgendaDeConsultas que já retorna os dados mapeados e ordenados
+        var consultas = agenda.listarConsultasDoPaciente(id);
         
     	return ResponseEntity.ok(consultas);
     }
@@ -102,14 +100,7 @@ public class ConsultaController {
         Paciente paciente = pacienteRepository.findByUsuarioId(usuario.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         
-        LocalDateTime inicioHoje = LocalDate.now().atStartOfDay();
-        LocalDateTime fimInfinito = LocalDateTime.of(3000, 1, 1, 0, 0);
-
-        List<DadosDetalhamentoConsulta> consultas = consultaRepository
-        		.buscarAtivasEFuturas(paciente.getId(), inicioHoje, fimInfinito)
-                .stream()
-                .map(DadosDetalhamentoConsulta::new)
-                .toList();
+        var consultas = agenda.listarConsultasDoPaciente(paciente.getId());
         
         return ResponseEntity.ok(consultas);
     }
