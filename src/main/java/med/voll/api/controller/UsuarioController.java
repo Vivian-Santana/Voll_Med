@@ -1,5 +1,6 @@
 package med.voll.api.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,7 +34,10 @@ public class UsuarioController {
     public ResponseEntity<?> resetarSenha(@RequestBody @Valid DadosResetSenha dados,
     	                                      @AuthenticationPrincipal Usuario usuarioLogado) {
     	
-    	//System.out.println("👤 Usuário logado no controller: " + usuarioLogado);
+    	if (!passwordEncoder.matches(dados.senhaAtual(), usuarioLogado.getSenha())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                                 .body(new MensagemResponse("Senha atual incorreta."));
+        }
     	
     	usuarioService.resetarSenha(usuarioLogado.getId(), dados.novaSenha());
     	return ResponseEntity.ok(new MensagemResponse("Senha alterada com sucesso!"));

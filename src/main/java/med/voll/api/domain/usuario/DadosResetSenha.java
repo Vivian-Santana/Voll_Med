@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record DadosResetSenha(
-    @NotBlank(message = "O login não pode ser vazio") 
-    String login,
     
     @NotBlank(message = "A senha atual não pode ser vazia") 
     String senhaAtual,
