@@ -1,6 +1,5 @@
 package med.voll.api.controller;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
-
 import org.springframework.web.bind.annotation.RequestBody;
 import lombok.RequiredArgsConstructor;
 import med.voll.api.domain.usuario.DadosResetSenha;
@@ -35,7 +33,7 @@ public class UsuarioController {
     	                                      @AuthenticationPrincipal Usuario usuarioLogado) {
     	
     	if (!passwordEncoder.matches(dados.senhaAtual(), usuarioLogado.getSenha())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            return ResponseEntity.badRequest()
                                  .body(new MensagemResponse("Senha atual incorreta."));
         }
     	
