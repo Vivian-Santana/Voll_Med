@@ -64,7 +64,7 @@ public class MedicoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('MEDICO','ADMIN', 'PACIENTE')")
     public ResponseEntity<?> listar(@PageableDefault(size = 10, sort = {"nome"}) Pageable paginacao) {
     	var page = medicorepository.findAllByAtivoTrue(paginacao)
     			.map(DadosListagemMedico::new);

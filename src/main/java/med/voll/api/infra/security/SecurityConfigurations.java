@@ -49,7 +49,7 @@ public class SecurityConfigurations {
                     req.requestMatchers(HttpMethod.PUT, "/pacientes").permitAll();
 
                     // RESTRINGE LEITURA DE DADOS AOS SEUS RESPECTIVOS PAPÉIS
-                    req.requestMatchers(HttpMethod.GET, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
+                    req.requestMatchers(HttpMethod.GET, "/medicos/**").hasAnyRole("MEDICO", "ADMIN","PACIENTE");
                     req.requestMatchers(HttpMethod.DELETE, "/medicos/**").hasAnyRole("MEDICO", "ADMIN");
                     req.requestMatchers(HttpMethod.GET, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
                     req.requestMatchers(HttpMethod.DELETE, "/pacientes/**").hasAnyRole("PACIENTE", "ADMIN");
