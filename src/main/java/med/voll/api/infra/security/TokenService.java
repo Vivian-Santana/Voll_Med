@@ -47,7 +47,7 @@ public class TokenService {
         }
     }
    
-/*
+
     public Long getUserId(String token) {
     	try {
 	    	var algoritmo = Algorithm.HMAC256(secret);
@@ -61,6 +61,8 @@ public class TokenService {
 	    }
         
     }
+    
+/*
 
     public String getUserRole(String token) {
     	try {

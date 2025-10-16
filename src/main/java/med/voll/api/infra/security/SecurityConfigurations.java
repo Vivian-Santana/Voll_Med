@@ -43,10 +43,10 @@ public class SecurityConfigurations {
                     req.requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll();        
 
                     // LIBERA CADASTRO PARA MÉDICOS E PACIENTES
-                    req.requestMatchers(HttpMethod.POST, "/medicos").permitAll();
-                    req.requestMatchers(HttpMethod.PUT, "/medicos").permitAll();
+                    req.requestMatchers(HttpMethod.POST, "/medicos").hasAnyRole("MEDICO", "ADMIN");
+                    req.requestMatchers(HttpMethod.PUT, "/medicos").hasAnyRole("MEDICO", "ADMIN");
                     req.requestMatchers(HttpMethod.POST, "/pacientes").permitAll();
-                    req.requestMatchers(HttpMethod.PUT, "/pacientes").permitAll();
+                    req.requestMatchers(HttpMethod.PUT, "/pacientes").authenticated();
 
                     // RESTRINGE LEITURA DE DADOS AOS SEUS RESPECTIVOS PAPÉIS
                     req.requestMatchers(HttpMethod.GET, "/medicos/**").hasAnyRole("MEDICO", "ADMIN","PACIENTE");
