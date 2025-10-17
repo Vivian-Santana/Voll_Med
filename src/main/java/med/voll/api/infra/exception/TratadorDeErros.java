@@ -85,8 +85,8 @@ public class TratadorDeErros {
 	}
 	
 	@ExceptionHandler(IllegalArgumentException.class)
-	public ResponseEntity<MensagemResponse> tratarIllegalArgument(IllegalArgumentException ex) {
-	    return ResponseEntity.badRequest().body(new MensagemResponse(ex.getMessage()));
+	public ResponseEntity<?> tratarIllegalArgument(IllegalArgumentException ex) {
+	    return ResponseEntity.badRequest().body(new ErroDTO(ex.getMessage()));
 	}
 
 
@@ -104,8 +104,4 @@ public class TratadorDeErros {
 	public record ErroDTO(String erro) {
 	}
 
-	public record MensagemResponse(String mensagem) 
-	{ 
-		
-	}
 }
