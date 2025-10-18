@@ -101,7 +101,6 @@ public class TratadorDeErros {
 	*/
 
 	// CLASSE INTERNA PARA PADRONIZAR RESPOSTA
-	public record ErroDTO(String erro) {
-	}
+	public record ErroDTO(String erro) {}
 
 }

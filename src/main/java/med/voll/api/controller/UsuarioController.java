@@ -15,7 +15,7 @@ import med.voll.api.domain.usuario.DadosResetSenha;
 import med.voll.api.domain.usuario.Usuario;
 import med.voll.api.domain.usuario.UsuarioRepository;
 import med.voll.api.domain.usuario.UsuarioService;
-import med.voll.api.infra.exception.TratadorDeErros.MensagemResponse;
+import med.voll.api.infra.exception.TratadorDeErros.ErroDTO;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,11 +34,11 @@ public class UsuarioController {
     	
     	if (!passwordEncoder.matches(dados.senhaAtual(), usuarioLogado.getSenha())) {
             return ResponseEntity.badRequest()
-                                 .body(new MensagemResponse("Senha atual incorreta."));
+                                 .body(new ErroDTO("Senha atual incorreta."));
         }
     	
     	usuarioService.resetarSenha(usuarioLogado.getId(), dados.novaSenha());
-    	return ResponseEntity.ok(new MensagemResponse("Senha alterada com sucesso!"));
+    	return ResponseEntity.ok(new ErroDTO("Senha alterada com sucesso!"));
     }
 
 }
