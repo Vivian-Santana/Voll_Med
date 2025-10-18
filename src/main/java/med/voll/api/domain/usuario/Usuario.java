@@ -88,4 +88,13 @@ public class Usuario implements UserDetails {
 	public void setSenha(String novaSenha) {
 		this.senha = novaSenha;
 	}
+	
+	//admin
+	public void setRole(Role roleAdmin) {
+	    this.role = roleAdmin;
+	}
+
+	public void setLogin(String loginAdmin) {
+	    this.login = loginAdmin;
+	}
 }
