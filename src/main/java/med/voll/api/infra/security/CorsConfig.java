@@ -15,14 +15,19 @@ public class CorsConfig {
 	@Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("http://localhost:4200"));
+        
+        configuration.setAllowedOriginPatterns(List.of
+        		("http://localhost:4200", 
+        		 "https://vollmed-production.up.railway.app"));
+        
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Content-Type", "Authorization"));
         configuration.setAllowCredentials(false); // só se usa cookies/autenticação
-        configuration.setExposedHeaders(List.of("Authorization")); // se envia JWT no header
+        configuration.setExposedHeaders(List.of("Authorization")); // List.of("Authorization") se envia JWT no header
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+        
         return source;
     }
 

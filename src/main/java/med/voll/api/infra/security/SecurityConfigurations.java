@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
+
 import med.voll.api.infra.exception.AccessDeniedHandlerPersonalizado;
 
 @Configuration
@@ -22,25 +24,30 @@ import med.voll.api.infra.exception.AccessDeniedHandlerPersonalizado;
 public class SecurityConfigurations {
 	
 	@Autowired
+	private CorsConfigurationSource corsConfigurationSource; // injeta o bean do CorsConfig
+	
+	@Autowired
 	private AccessDeniedHandlerPersonalizado accessDeniedHandlerPersonalizado;
 	 
 	@Autowired
-	    private SecurityFilter securityFilter;
+	private SecurityFilter securityFilter;
+	
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
         		.csrf(csrf -> csrf.disable())
-        		.cors(cors -> cors.configurationSource(new CorsConfig().corsConfigurationSource())) // chama CorsConfig
+        		.cors(cors -> cors.configurationSource(corsConfigurationSource)) //usa o bean do CorsConfig
+        		//.cors(cors -> cors.configurationSource(new CorsConfig().corsConfigurationSource())) // chama CorsConfig
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(req -> {
-                	
-                	//É SÓ NECESSÁRIO ESTAR AUTENTICADO (AUTHENTICATED()), SEM EXIGIR ROLE ESPECÍFICA.
-                	req.requestMatchers(HttpMethod.PATCH, "/usuarios/reset-senha").authenticated();
+                .authorizeHttpRequests(req -> {                	           
              	
                 	// LIBERA LOGIN E SWAGGER
                     req.requestMatchers("/login").permitAll();             
-                    req.requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll();        
+                    req.requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll(); 
+                    
+                    //É SÓ NECESSÁRIO ESTAR AUTENTICADO (AUTHENTICATED()), SEM EXIGIR ROLE ESPECÍFICA.
+                	req.requestMatchers(HttpMethod.PATCH, "/usuarios/reset-senha").authenticated();
 
                     // LIBERA CADASTRO PARA MÉDICOS E PACIENTES
                     req.requestMatchers(HttpMethod.POST, "/medicos").hasAnyRole("MEDICO", "ADMIN");
@@ -58,8 +65,7 @@ public class SecurityConfigurations {
                     req.requestMatchers("/admin/**").hasRole("ADMIN");
 
                     // QUALQUER OUTRA REQUISIÇÃO PRECISA DE AUTENTICAÇÃO
-                    req.anyRequest().authenticated();                
-
+                    req.anyRequest().authenticated();
                 })
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandlerPersonalizado))
