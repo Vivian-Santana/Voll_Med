@@ -18,7 +18,9 @@ public class CorsConfig {
         
         configuration.setAllowedOriginPatterns(List.of
         		("http://localhost:4200", 
-        		 "https://vollmed-production.up.railway.app"));
+        		 "https://vollmed-production.up.railway.app",
+        		 "https://vidaplussaude-vivi.netlify.app"
+        		 ));
         
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Content-Type", "Authorization"));
