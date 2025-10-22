@@ -1,6 +1,7 @@
 package med.voll.api.domain.medico;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Especialidade {
 
@@ -12,4 +13,12 @@ public enum Especialidade {
 	public static Especialidade fromValue(String value) {
 		return Especialidade.valueOf(value.toUpperCase());
 	}
+	
+	@Override
+    @JsonValue
+    public String toString() {
+        // Substitui underscores por espaços e deixa apenas a primeira letra maiúscula
+        String formatted = name().toLowerCase().replace("_", " ");
+        return formatted.substring(0, 1).toUpperCase() + formatted.substring(1);
+    }
 }
