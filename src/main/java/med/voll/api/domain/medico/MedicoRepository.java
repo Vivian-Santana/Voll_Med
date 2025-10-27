@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import med.voll.api.domain.paciente.Paciente;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -23,9 +24,9 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
 	Optional<Medico> findByNome(String nome);
 	
 	Page<Medico> findAllByAtivoTrue(Pageable paginacao);
+	
+	List<Medico> findAllByAtivoTrue();
   
-
-
     @Query("""
             select m from Medico m
             where

@@ -1,7 +1,10 @@
 package med.voll.api.controller;
 
+import java.util.List;
+
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -74,6 +77,16 @@ public class MedicoController {
     	var page = medicorepository.findAllByAtivoTrue(paginacao)
     			.map(DadosListagemMedico::new);
         return ResponseEntity.ok(page);
+    }
+    
+    // listar sem paginação
+    @GetMapping("/todos")
+    @PreAuthorize("hasAnyRole('MEDICO','ADMIN', 'PACIENTE')")
+    public List<DadosListagemMedico> listarTodos() {
+		return medicorepository.findAllByAtivoTrue()
+                         .stream()
+                         .map(DadosListagemMedico::new)
+                         .toList();
     }
 
     @PutMapping
