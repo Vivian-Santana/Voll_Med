@@ -92,7 +92,7 @@ public class MedicoController {
     @PutMapping
     @Transactional
     @PreAuthorize("hasAnyRole('MEDICO', 'ADMIN')")
-    public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizacaoMedicos dados,
+    public ResponseEntity<DadosDetalhamentoMedico> atualizar(@RequestBody @Valid DadosAtualizacaoMedicos dados,
     								@AuthenticationPrincipal Usuario usuarioLogado) {
     	
         if (usuarioLogado.getRole() == Usuario.Role.ROLE_MEDICO) {
